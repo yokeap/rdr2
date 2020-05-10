@@ -10,7 +10,7 @@
   "license": "ISC",
   "dependencies": {
     "express": "^4.16.2",
-    "extend": "^3.0.1",
+    "extend": "^3.0.2",
     "i2c": "^0.2.3",
     "mathjs": "^3.20.2",
     "serialport": "^6.0.5",
