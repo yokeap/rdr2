@@ -1,0 +1,77 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta id="Viewport" name="viewport" width="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <script type='text/javascript' src="./js/no-scroll-fullscreen-viewport.js"></script>
+    <link rel="stylesheet" href="./asset/styles.css">
+    <title>RDR2</title>
+
+    <script type='text/javascript' src="./bower_components/eventemitter2/lib/eventemitter2.js"></script>
+    <script type='text/javascript' src="./bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+    <script type='text/javascript' src="./bower_components/web-component-tester/browser.js"></script>
+    <script type='text/javascript' src="/socket.io/socket.io.js"></script>
+
+    <script>
+        window.Polymer = window.Polymer || {};
+        window.Polymer.dom = 'shadow';
+      </script>
+
+<link rel="import" href="./bower_components/polymer/polymer.html">
+<link rel="import" href="../socket-video-h264.html">
+<link rel="import" href="../packet-video.html">
+    
+</head>
+<body>
+
+    <!-- <x-h264-video id="camera1" border='1' framespersecond='30'>
+    </x-h264-video> -->
+
+    <div id="video_container" class="full-height center pagination-centered" boder="0" style="absolute; z-index:0; width:100%; height:100%; left:0; top:0;">
+        <packet-video id='camera1' border='1' style='width: 80%; height:80%;'></packet-video>
+    </div>
+
+    <script type="text/javascript">
+        var socket = io("192.168.1.23:9010").connect();
+
+
+        // socket.withHistory = socket;
+
+        // window.addEventListener('WebComponentsReady', function(e) {
+        //     var c1 = document.getElementById("camera1");
+        //     c1.registerEmitterHanlders(socket);
+        // });
+
+        let vid     = document.getElementById("camera1")
+
+        window.addEventListener('WebComponentsReady', function(e) {
+            // window.addEventListener('DOMContentLoaded', function(e) {
+            socket.emit('request_Init_Segment',function(data){
+            //prefix the stream with the initial segment
+            // var init_segment = new Uint8Array(data);
+            // self.sourceBuffer.appendBuffer(init_segment);
+            // init_queued=true;
+
+            var initialFrame = new Uint8Array(data);
+            vid.init(initialFrame);
+              console.log("Init segment received");
+          });
+    
+        });
+
+        //mp4 fragment stream
+        socket.on('x-h264-video.data', function(data){
+            var data = new Uint8Array(data);
+            vid.append(data);
+            console.log(data.length);
+         });
+
+          
+
+    </script>
+    
+</body>
+
+
+</html>
