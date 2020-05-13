@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta id="Viewport" name="viewport" width="initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no">
+    <script type='text/javascript' src="./js/no-scroll-fullscreen-viewport.js"></script>
+    <link rel="stylesheet" href="./asset/styles.css">
+    <link rel="stylesheet" type="text/css" href="./js/loadingbar/loading-bar.css" />
+    <title>RDR2</title>
+
+    <script type='text/javascript' src="./bower_components/eventemitter2/lib/eventemitter2.js"></script>
+    <script type='text/javascript' src="./bower_components/webcomponentsjs/webcomponents-lite.js"></script>
+    <script type='text/javascript' src="./bower_components/web-component-tester/browser.js"></script>
+    <script type='text/javascript' src="/socket.io/socket.io.js"></script>
+    <script type="text/javascript" src="./js/nipplejs.min.js"></script>
+    <script type="text/javascript" src="./js/loadingbar/loading-bar.js"></script>
+    <script src="./lib/math.min.js"></script>
+
+    <script>
+        window.Polymer = window.Polymer || {};
+        window.Polymer.dom = 'shadow';
+    </script>
+
+    <link rel="import" href="./bower_components/polymer/polymer.html">
+    <link rel="import" href="../packet-video.html">
+
+</head>
+
+<body>
+
+    <!-- <div id="video_container" class="full-height center pagination-centered" boder="0"
+        style="absolute; z-index:0; width:1280px; height:720px; left:0; top:0;">
+        <packet-video id='camera1' border='1' style='width: 80%; height:80%;'></packet-video>
+
+        <div id="joyLeft"></div>
+        <div id="joyRight"></div>
+
+       
+
+    </div> -->
+
+    <packet-video id='camera1' border='1' style='z-index:-1; position: absolute;width:100%; height:100%; left:0; top:0;'></packet-video>
+
+    <div id="control" class="full-height center pagination-centered" boder="0" style="position: absolute; z-index:0; width:100%; height:100%; left:0; top:0;">
+        
+
+        <div id="joyLeft"></div>
+        <div id="joyRight"></div>
+
+        <div class="row" style="display: flex;">
+
+            <div class="ldBar levelGauge no-percent" id="battLevel" data-type="stroke" data-stroke="#76D7C4"
+                data-stroke-trail-width="10" data-stroke-width="10" data-stroke-trail="gray" data-min="0" data-max="100"
+                data-path="M 15,15 H 500"
+                style="position: absolute; margin-left: 0%; margin-top: 2%; width: 800px; height:200px;">
+                <div class="batt-value"> BATTERY : <span id="battVal"> 70%</span></div>
+            </div>
+
+            <!-- <div class="ldBar levelGauge no-percent" id="rssiLevel" data-type="stroke" data-stroke="#76D7C4"
+                data-stroke-trail-width="10" data-stroke-width="10" data-stroke-trail="gray" data-min="0" data-max="100"
+                data-path="M 15,15 H 500"
+                style="position: absolute; margin-left: 26%; margin-top: 2%;  width: 800px; height:200px;">
+                <div class="batt-value"> SIGNAL STRENGTH : <span id="rssiVal"> 70%</span></div>
+            </div> -->
+
+        </div>
+
+    </div>
+
+
+    <script type="text/javascript">
+
+        let motionData = {
+            surge: 0,
+            sway: 0,
+            yaw: 0,
+            constraint: 0
+        }
+
+        let a = 0.435, b = 0.1852, r = 0.073;
+
+        var socket = io("192.168.1.23:9010").connect();
+
+        let vid = document.getElementById("camera1")
+
+        window.addEventListener('WebComponentsReady', function (e) {
+
+            // setGauge("#battLevel", "battVal", 20);
+            // setGauge("#rssiLevel", "rssiVal", 5);
+        });
+
+        setTimeout(function(){ 
+            socket.emit('request_Init_Segment', function (data) {
+                var initialFrame = new Uint8Array(data);
+                vid.init(initialFrame);
+                console.log("Init segment received");
+            });
+        }, 5000);
+
+        //mp4 fragment streaming socket, injecting to MSE
+        socket.on('x-h264-video.data', function (data) {
+            var data = new Uint8Array(data);
+            vid.append(data);
+            // console.log(data.length);
+        });
+
+
+        var joyLeft = nipplejs.create({
+            zone: document.getElementById('joyLeft'),
+            mode: 'static',
+            size: 180,
+            restOpacity: 0.2,
+            position: { left: '10%', bottom: '19%' },
+            color: '#76D7C4',
+            threshold: 0.3
+        });
+
+        var joyRight = nipplejs.create({
+            zone: document.getElementById('joyRight'),
+            mode: 'static',
+            size: 180,
+            restOpacity: 0.2,
+            position: { right: '10%', bottom: '19%' },
+            color: '#76D7C4',
+            lockX: true,
+            threshold: 0.3
+        });
+
+        joyLeft.on('move', function (evt, data) {
+            motionData.sway = (data.position.x - data.instance.position.x) / 90.0;
+            motionData.surge = (data.instance.position.y - data.position.y) / 90.0;
+            // console.log("X: " + ((data.position.x - data.instance.position.x) / 90.0));
+            // console.log("Y: " + (data.instance.position.y - data.position.y));
+            // socket.emit('motion-data', motionData);
+            motorAlloc(motionData);
+        });
+
+        joyLeft.on('end', function (evt, data) {
+            motionData.surge = 0;
+            motionData.sway = 0;
+            // socket.emit('motion-data', motionData);
+            motorAlloc(motionData);
+        });
+
+        joyRight.on('move', function (evt, data) {
+            motionData.yaw = (data.position.x - data.instance.position.x) / 90.0;
+            //console.log("YAW: " + ((data.instance.position.x - data.position.x) / 90.0);
+            // socket.emit('motion-data', motionData);
+            motorAlloc(motionData);
+        });
+
+        joyRight.on('end', function (evt, data) {
+            motionData.yaw = 0;
+            // socket.emit('motion-data', motionData);
+            motorAlloc(motionData);
+        });
+
+        function setGauge(gaugeName, gaugeValName, setVal) {
+            let gauge = new ldBar(gaugeName);
+            gauge.set(setVal);
+            document.getElementById(gaugeValName).innerHTML = setVal;
+        }
+
+        // setTimeout(function () {
+        //     setGauge("#battLevel", "battVal", 20);
+        //     setGauge("#rssiLevel", "rssiVal", 5);
+        // }, 1000);
+
+        // function motionDataPush(){
+        //     socket.emit()
+        // }
+
+        // setInterval(function () {
+        // //    console.log(joyLeft.position);
+        //     motorAlloc(motionData);
+        //     // motionData.surge = 0;
+        //     // motionData.sway = 0;
+        //     // motionData.yaw = 0;
+        // }, 10);
+
+        function motorAlloc(data){
+            if(data){
+                let x = math.matrix([[data.surge], [data.yaw], [data.sway], [data.constraint]]);
+
+                let alpha = math.multiply(math.matrix([ [1,  1,  (a+b), 1],
+                                                        [1, -1, -(a+b), 1],
+                                                        [1,  1, -(a+b), -1],
+                                                        [1, -1,  (a+b), -1] ]), (1/r), x);
+
+                let motorPwmData = {
+                    m1: Math.round(alpha._data[0]) * 6,
+                    m2: Math.round(alpha._data[1]) * 6,
+                    m3: Math.round(alpha._data[2]) * 6,
+                    m4: Math.round(alpha._data[3]) * 6
+                }
+                
+                // console.log(motorPwmData);
+                socket.emit('motion-data', motorPwmData);
+            }
+        }
+
+
+    </script>
+
+</body>
+
+
+</html>

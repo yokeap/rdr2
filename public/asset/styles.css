@@ -1,16 +1,51 @@
 body {
-    /* overflow : hidden; */
-    background-color : #595959;
-  }
+  /* overflow : hidden; */
+  background-color: #595959;
+}
 
-  #camera1 {
-    width:100%;
-    height: 100%;
-    position: relative;
-  }
-  
-  #show-settings {
-    position: absolute;
-    right: 0px;
-    top: 0px;
-  }
+#camera1 {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+#show-settings {
+  position: absolute;
+  right: 0px;
+  top: 0px;
+}
+
+.ldBar-label{
+  content: "";
+  visibility: hidden;
+}
+
+.levelGauge {
+  stroke-dasharray: 3, 3;
+  stroke-dashoffset: 16;
+  stroke-opacity: 1;
+}
+
+.batt-value {
+  font-weight: 200;
+  font-size: 20px;
+  display: block;
+  position: absolute;
+  top: 7%;
+  left: 60%;
+  /* transform: translate(-50%, -50%); */
+  --text-color: rgb(255, 255, 255);
+  --text-glow-color: rgba(52,31,71, .5);
+  color: var(--text-color);
+  text-shadow:
+    -1px 1px 2px var(--text-glow-color),
+    1px -1px 2px var(--text-glow-color),
+    -1px -1px 4px var(--text-glow-color),
+    1px -1px 2px var(--text-glow-color);
+}
+
+/* #joyLeft{
+  position: absolute;
+  left: 10%;
+  bottom: 10%;
+} */
