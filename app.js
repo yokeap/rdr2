@@ -195,7 +195,12 @@ function sendRawMotionVal(callback) {
 	  else{
 	    //console.log('Write Completed/n');
 			// waits until all output data has been transmitted to the serial port.
-		  DueSerialport.drain(callback);
+		  // DueSerialport.drain(callback);
+      DueSerialport.flush();
 		}
   });
+  motorPwm.m1 = 0;
+  motorPwm.m2 = 0;
+  motorPwm.m3 = 0;
+  motorPwm.m4 = 0;
 }

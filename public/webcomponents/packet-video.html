@@ -599,7 +599,9 @@
           }
           //maxQueueSize = this.latencyReducer ? 120 : 600;
           maxQueueSize = this.latencyReducer ? 120 : 600;
-          console.log(maxQueueSize);
+
+          // comment out for reduce memory of console.log
+          // console.log(maxQueueSize);
           if (this.lastcheck == data.length) {
             //return;
           }
