@@ -16,6 +16,6 @@
     "serialport": "^6.0.5",
     "sleep": "^5.1.1",
     "socket.io": "^2.0.4",
-    "systeminformation": "^3.37.3"
+    "systeminformation": "^4.27.11"
   }
 }
