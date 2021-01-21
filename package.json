@@ -15,7 +15,7 @@
     "mathjs": "^3.20.2",
     "serialport": "^6.0.5",
     "sleep": "^5.1.1",
-    "socket.io": "^2.0.4",
+    "socket.io": "^2.4.0",
     "systeminformation": "^3.37.3"
   }
 }
