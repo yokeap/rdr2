@@ -9,7 +9,7 @@
   "author": "Siwakorn Sukprasertchai",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.16.2",
+    "express": "^4.17.3",
     "extend": "^3.0.1",
     "i2c": "^0.2.3",
     "mathjs": "^3.20.2",
